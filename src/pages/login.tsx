@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { LogIn, User, Lock, AlertCircle } from 'lucide-react';
 import api from '../../services/api';
+import { AxiosError } from "axios";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -25,37 +26,36 @@ const Login: React.FC = () => {
 
     try {
       const res = await api.post('/accounts/api/login/', { username, password });
-      localStorage.setItem('access_token', res.data.access);
+      const token = res.data.access;
+      localStorage.setItem('access_token', token);
       localStorage.setItem('refresh_token', res.data.refresh);
-
-      const payload = JSON.parse(atob(res.data.access.split('.')[1]));
+  
+      const payload = JSON.parse(atob(token.split('.')[1]));
       localStorage.setItem('username', payload.username);
-
-      
       localStorage.setItem('is_admin', payload.is_admin ? 'true' : 'false');
-      console.log('is_admin:', payload.is_admin); // Debugging line
-
+  
       if (payload.is_admin) {
         navigate('/admin');
         return;
       }
-
-      const clientRes = await api.get('/api/client/me/', {
-        headers: { Authorization: `Bearer ${res.data.access}` },
+  
+      const clientRes = await api.post('/api/client/me/', { user_id: payload.user_id }, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-
+  
       localStorage.setItem('client_id', clientRes.data.id);
-      localStorage.setItem("client_user_id", clientRes.data.user.id);
+      localStorage.setItem('client_user_id', clientRes.data.user.id);
       localStorage.setItem('client_nom', clientRes.data.nom);
       localStorage.setItem('client_prenom', clientRes.data.prenom);
-      localStorage.setItem("client_email", clientRes.data.email);
-      localStorage.setItem("client_telephone", clientRes.data.telephone);
+      localStorage.setItem('client_email', clientRes.data.email);
+      localStorage.setItem('client_telephone', clientRes.data.telephone);
       localStorage.setItem('client_nom_structure', clientRes.data.nom_structure);
-
+  
       navigate('/');
-    } catch (err) {
-      console.error(err);
-      setError('Identifiants incorrects');
+    } catch (err: unknown) {
+      const error = err as AxiosError;
+      console.error("Erreur login:", error);
+      console.log("Détail:", error.response?.data);
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +71,7 @@ const Login: React.FC = () => {
       >
         <div className="text-center">
           <div className="flex justify-center">
-            <img src="/logo.png" alt="Logo" className="h-20 w-20 rounded-full object-cover" />
+            <img src="/static/logo.png" alt="Logo" className="h-20 w-20 rounded-full object-cover" />
           </div>
           <h2 className="mt-4 text-3xl font-bold text-gray-900">Connexion</h2>
           <p className="mt-2 text-sm text-gray-600">Identifiez-vous pour accéder à votre espace</p>

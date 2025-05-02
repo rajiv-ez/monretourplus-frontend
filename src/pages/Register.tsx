@@ -75,7 +75,7 @@ const Register: React.FC = () => {
       >
         <div className="text-center">
           <div className="flex justify-center">
-            <img src="/logo.png" alt="Logo" className="h-20 w-20 rounded-full object-cover" />
+            <img src="/static/logo.png" alt="Logo" className="h-20 w-20 rounded-full object-cover" />
           </div>
           <h2 className="mt-4 text-3xl font-bold text-gray-900">Inscription Client</h2>
           <p className="mt-2 text-sm text-gray-600">Créez votre compte pour accéder aux services personnalisés</p>

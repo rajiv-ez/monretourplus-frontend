@@ -10,7 +10,7 @@ const HeroSection: React.FC = () => {
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0" style={{ 
-          backgroundImage: 'url("/banner.jpg")',
+          backgroundImage: 'url("/static/banner.jpg")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           mixBlendMode: 'overlay'

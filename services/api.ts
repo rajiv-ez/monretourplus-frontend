@@ -1,11 +1,13 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+console.log("URL:", import.meta.env.VITE_API_BASE_URL);
 
 // Refresh token automatiquement si 401
 api.interceptors.response.use(
@@ -18,7 +20,7 @@ api.interceptors.response.use(
 
       try {
         const refresh = localStorage.getItem("refresh_token");
-        const res = await axios.post(`${import.meta.env.VITE_API_URL}/accounts/api/refresh/`, {
+        const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/accounts/api/refresh/`, {
           refresh,
         });
 

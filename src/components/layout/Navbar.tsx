@@ -32,7 +32,7 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center">
             <Link to="/" className="h-10 w-10 mr-2 rounded-full bg-white/90 shadow-lg ring-1 ring-zinc-900/5 backdrop-blur-sm dark:bg-zinc-800/90">
-              <img src="/logo.png" alt="Logo" className="h-full w-full rounded-full object-cover" />
+              <img src="/static/logo.png" alt="Logo" className="h-full w-full rounded-full object-cover" />
             </Link>
             <Link to="/" className="text-xl font-bold">MonRetourMSC+</Link>
           </div>
