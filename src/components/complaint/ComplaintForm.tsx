@@ -1,4 +1,3 @@
-// VERSION ADAPTÉE : Garde le formulaire d'origine, utilise ton backend DRF
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Send } from 'lucide-react';
@@ -13,7 +12,7 @@ import api from '../../../services/api';
 interface FormErrors {
   sujet?: string;
   description?: string;
-  categorie?: string;
+  service_concerne?: string;
   email?: string;
   telephone?: string;
   nom_structure?: string;
@@ -24,14 +23,14 @@ interface FormErrors {
 
 const ComplaintForm: React.FC = () => {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     sujet: '',
     description: '',
-    categorie: '',
+    service_concerne: '',
     nom_structure: '',
     nom: '',
     prenom: '',
@@ -43,12 +42,12 @@ const ComplaintForm: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
 
   useEffect(() => {
-    api.get('/api/categories-reclamations/').then(res => {
-      setCategories(res.data.results);
+    api.get('/api/services/').then(res => {
+      setServices(res.data.results);
       setLoading(false);
     });
 
-      
+
     // Préremplissage depuis localStorage
     const prefilled = {
       nom_structure: localStorage.getItem("client_nom_structure") || '',
@@ -78,7 +77,7 @@ const ComplaintForm: React.FC = () => {
     if (!formData.sujet.trim()) newErrors.sujet = 'Le sujet est requis';
     if (!formData.description.trim()) newErrors.description = 'La description est requise';
     else if (formData.description.length < 20) newErrors.description = 'Minimum 20 caractères requis';
-    if (!formData.categorie) newErrors.categorie = 'La catégorie est requise';
+    if (!formData.service_concerne) newErrors.service_concerne = 'Veuillez sélectionner un service';
     if (!formData.email.trim()) newErrors.email = "L'email est requis";
     else if (!validateEmail(formData.email)) newErrors.email = 'Format d’email invalide';
     if (!formData.telephone.trim()) newErrors.telephone = 'Téléphone requis';
@@ -134,16 +133,16 @@ const ComplaintForm: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select
-              id="categorie"
-              name="categorie"
-              label="Catégorie"
-              value={formData.categorie}
+              id="service_concerne"
+              name="service_concerne"
+              label="Service concerné"
+              value={formData.service_concerne}
               onChange={handleChange}
-              options={categories.map(c => ({ label: c.nom, value: c.id }))}
+              options={services.map(c => ({ label: c.nom, value: c.id }))}
               required
-              error={errors.categorie}
+              error={errors.service_concerne}
             />
-            
+
             <Input
               id="booking_number"
               name="booking_number"
@@ -167,7 +166,7 @@ const ComplaintForm: React.FC = () => {
             error={errors.description}
             rows={6}
           />
-          
+
           <Input
             id="nom_structure"
             name="nom_structure"
@@ -177,6 +176,7 @@ const ComplaintForm: React.FC = () => {
             placeholder="Entrez le nom de votre entreprise"
             required
             error={errors.nom_structure}
+            readOnly
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -189,6 +189,7 @@ const ComplaintForm: React.FC = () => {
               placeholder="Entrez votre nom"
               required
               error={errors.nom}
+              readOnly
             />
             <Input
               id="prenom"
@@ -199,6 +200,7 @@ const ComplaintForm: React.FC = () => {
               placeholder="Entrez votre prénom"
               required
               error={errors.prenom}
+              readOnly
             />
           </div>
 
@@ -213,6 +215,7 @@ const ComplaintForm: React.FC = () => {
               placeholder="votre@email.com"
               required
               error={errors.email}
+              readOnly
             />
             <Input
               id="telephone"
@@ -223,6 +226,7 @@ const ComplaintForm: React.FC = () => {
               placeholder="Ex: +24174123456"
               required
               error={errors.telephone}
+              readOnly
             />
           </div>
 

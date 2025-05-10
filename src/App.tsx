@@ -11,6 +11,8 @@ import ComplaintPage from './pages/ComplaintPage';
 import AdminPage from './pages/AdminPage';
 import Login from './pages/login';
 import Register from './pages/Register';
+import { User } from 'lucide-react';
+import UserProfilePage from './pages/UserProfilePage';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
@@ -86,6 +88,16 @@ const AppRoutes = () => (
             <AdminPage />
           </Layout>
         </ProtectedAdminRoute>
+      }
+    />
+    <Route
+      path="/profile"
+      element={
+        <ProtectedUserRoute>
+          <Layout>
+            <UserProfilePage />
+          </Layout>
+        </ProtectedUserRoute>
       }
     />
   </Routes>

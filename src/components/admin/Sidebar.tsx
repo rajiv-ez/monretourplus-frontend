@@ -13,8 +13,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, active, onClick 
     onClick={onClick}
     className={`
       flex items-center space-x-3 w-full px-4 py-3 rounded-lg transition-colors
-      ${active 
-        ? 'bg-blue-100 text-blue-700' 
+      ${active
+        ? 'bg-blue-100 text-blue-700'
         : 'text-gray-600 hover:bg-gray-100'
       }
     `}
@@ -35,8 +35,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => 
     { id: 'feedback', label: 'Avis clients', icon: <MessageSquare className="h-5 w-5" /> },
     { id: 'complaints', label: 'Réclamations', icon: <AlertTriangle className="h-5 w-5" /> },
     { id: 'statistics', label: 'Statistiques', icon: <BarChart className="h-5 w-5" /> },
+    { id: 'services', label: 'Services', icon: <LayoutDashboard className="h-5 w-5" /> },
     { id: 'users', label: 'Utilisateurs', icon: <Users className="h-5 w-5" /> },
-    { id: 'settings', label: 'Paramètres', icon: <Settings className="h-5 w-5" /> },
+    //{ id: 'settings', label: 'Paramètres', icon: <Settings className="h-5 w-5" /> },
   ];
 
   return (

@@ -16,7 +16,6 @@ interface FormErrors {
   prenom?: string;
   email?: string;
   telephone?: string;
-  booking_number?: string;
   service_concerne?: string;
   note?: string;
   commentaire?: string;
@@ -33,7 +32,6 @@ const FeedbackForm: React.FC = () => {
     prenom: '',
     email: '',
     telephone: '',
-    booking_number: '',
     service_concerne: '',
     note: 0,
     commentaire: '',
@@ -46,9 +44,9 @@ const FeedbackForm: React.FC = () => {
       setServices(res.data.results);
       setLoading(false);
     });
-    
 
-      
+
+
     // Préremplissage depuis localStorage
     const prefilled = {
       nom_structure: localStorage.getItem("client_nom_structure") || '',
@@ -83,7 +81,6 @@ const FeedbackForm: React.FC = () => {
     if (!formData.prenom.trim()) newErrors.prenom = 'Le prénom est requis';
     if (!formData.email.trim()) newErrors.email = 'L’email est requis';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Format email invalide';
-    if (!formData.booking_number.trim()) newErrors.booking_number = 'Numéro de booking requis';
     if (!formData.service_concerne) newErrors.service_concerne = 'Veuillez sélectionner un service';
     if (formData.note === 0) newErrors.note = 'Veuillez sélectionner une note';
     if (formData.note <= 3 && !formData.commentaire.trim()) newErrors.commentaire = 'Commentaire requis pour note ≤ 3';
@@ -102,6 +99,7 @@ const FeedbackForm: React.FC = () => {
       const payload = { ...formData, client: client_id };
       const token = localStorage.getItem("access_token");
       const headers = { Authorization: `Bearer ${token}` };
+      // Envoi de l'avis
       await api.post('/api/avis/', payload, { headers });
       toast.success('Votre avis a été enregistré avec succès !');
       navigate('/', { state: { fromFeedback: true } });
@@ -123,17 +121,8 @@ const FeedbackForm: React.FC = () => {
       <Card className="transition-all duration-300 hover:shadow-lg">
         <form onSubmit={handleSubmit} className="space-y-6">
 
-          
-        <Input
-            id="booking_number"
-            name="booking_number"
-            label="N° BL / Booking"
-            value={formData.booking_number}
-            onChange={handleChange}
-            placeholder="Ex: MSC12345678"
-            required
-            error={errors.booking_number}
-          />
+
+
 
           <div>
             <label className="block mb-2 text-sm font-medium text-gray-700">Service concerné</label>
@@ -170,11 +159,10 @@ const FeedbackForm: React.FC = () => {
           <TextArea
             id="commentaire"
             name="commentaire"
-            label={`Commentaire ${formData.note <= 3 ? '(requis)' : '(facultatif)'}`}
+            label="Commentaire "
             value={formData.commentaire}
             onChange={handleChange}
             placeholder="Partagez votre expérience..."
-            required={formData.note <= 3}
             error={errors.commentaire}
             rows={5}
           />
@@ -183,7 +171,7 @@ const FeedbackForm: React.FC = () => {
 
 
 
-          
+
           <Input
             id="nom_structure"
             name="nom_structure"
@@ -193,6 +181,7 @@ const FeedbackForm: React.FC = () => {
             placeholder="Entrez le nom de votre entreprise"
             required
             error={errors.nom_structure}
+            readOnly={true}
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -205,6 +194,7 @@ const FeedbackForm: React.FC = () => {
               placeholder="Entrez votre nom"
               required
               error={errors.nom}
+              readOnly={true}
             />
             <Input
               id="prenom"
@@ -215,6 +205,7 @@ const FeedbackForm: React.FC = () => {
               placeholder="Entrez votre prénom"
               required
               error={errors.prenom}
+              readOnly={true}
             />
           </div>
 
@@ -229,6 +220,7 @@ const FeedbackForm: React.FC = () => {
               placeholder="votre@email.com"
               required
               error={errors.email}
+              readOnly={true}
             />
             <Input
               id="telephone"
@@ -238,6 +230,7 @@ const FeedbackForm: React.FC = () => {
               onChange={handleChange}
               placeholder="06XXXXXXXX"
               error={errors.telephone}
+              readOnly={true}
             />
           </div>
 

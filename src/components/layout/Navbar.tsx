@@ -42,15 +42,16 @@ const Navbar: React.FC = () => {
             {isConnected && MenuLink("/feedback", "Donner un avis")}
             {isConnected && MenuLink("/complaint", "Soumettre une réclamation")}
             {isConnected && isAdmin && MenuLink("/admin", "Espace Admin")}
+            {isConnected && !isAdmin && MenuLink("/profile", "Mon Profil")}
             {!isConnected ? MenuLink("/login", "Se connecter") : (
-              
+
               <button
                 onClick={handleLogout}
                 className="px-3 py-2 rounded-md hover:bg-yellow-700 transition-colors duration-300"
               >
                 Se déconnecter
               </button>
-              
+
             )}
           </div>
 

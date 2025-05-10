@@ -5,17 +5,21 @@ import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { Complaint } from '../../types';
 import Button from '../common/Button';
 import toast from 'react-hot-toast';
+import api from '../../../services/api';
+
 
 interface ComplaintTableProps {
-  complaints: Complaint[];
+  initialComplaints: Complaint[];
 }
 
-const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints }) => {
+const ComplaintTable: React.FC<ComplaintTableProps> = ({ initialComplaints }) => {
+  const [complaints, setComplaints] = useState<Complaint[]>(initialComplaints);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'inProgress' | 'resolved'>('all');
   const [sortConfig, setSortConfig] = useState<{ key: keyof Complaint; direction: 'ascending' | 'descending' }>(
     { key: 'date_submitted', direction: 'descending' }
   );
+
 
   const getStatusBadge = (statut: string) => {
     if (statut === 'pending') {
@@ -42,28 +46,27 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ complaints }) => {
   };
 
   const handleUpdateStatus = async (id: number, statut: 'pending' | 'inProgress' | 'resolved') => {
-    const token = localStorage.getItem("access_token");
     try {
-      const res = await fetch(`/api/reclamations/${id}/statut/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ statut }),
-      });
-      if (!res.ok) throw new Error("Erreur lors de la mise à jour");
-  
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        toast.error("Token non trouvé");
+        return;
+      }
+
+      const headers = { Authorization: `Bearer ${token}` };
+
+      await api.patch(`/reclamations/${id}/statut/`, { statut }, { headers });
       toast.success("Statut mis à jour !");
-      // Optionnel : refresh ou mutation locale
-    } catch (err) {
-      toast.error("Impossible de changer le statut");
+    } catch (err: any) {
       console.error(err);
+      toast.error(err.response?.data?.error || "Erreur lors de la mise à jour");
     }
   };
-  
 
-  const filteredComplaints = complaints.filter(item => {
+
+
+
+  const filteredComplaints = (complaints || []).filter(item => {
     const matchesSearch = (
       item.sujet.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||

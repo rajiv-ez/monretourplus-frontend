@@ -7,7 +7,7 @@ import FeedbackTable from './FeedbackTable';
 import ComplaintTable from './ComplaintTable';
 import StatisticsSection from './StatisticsSection';
 import UserManagement from './UserManagement';
-import Settings from './Settings';
+import ServiceManagement from './ServicesManagement';
 import Sidebar from './Sidebar';
 import api from '../../../services/api';
 import { calculateComplaintStats, calculateFeedbackStats, calculateMonthlyStats } from '../../utils/stats';
@@ -27,6 +27,7 @@ const Dashboard: React.FC = () => {
         const [feedbackRes, complaintRes] = await Promise.all([
           api.get('/api/avis/full/', { headers }),
           api.get('/api/reclamations/full/', { headers })
+
         ]);
 
         setFeedbackData(feedbackRes.data.results);
@@ -37,8 +38,9 @@ const Dashboard: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchData();
+
+
   }, []);
 
   const monthlyStats = calculateMonthlyStats(feedbackData, complaintData);
@@ -52,6 +54,19 @@ const Dashboard: React.FC = () => {
   const handleExportComplaints = () => {
     exportToCSV(complaintData, 'complaints-export');
   };
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+  const handleSectionChange = (section: string) => {
+    setActiveSection(section);
+    closeSidebar();
+  };
+
 
   const renderContent = () => {
     switch (activeSection) {
@@ -104,7 +119,7 @@ const Dashboard: React.FC = () => {
       case 'feedback':
         return <FeedbackTable feedback={feedbackData} />;
       case 'complaints':
-        return <ComplaintTable complaints={complaintData} />;
+        return <ComplaintTable initialComplaints={complaintData} />;
       case 'statistics':
         return (
           <StatisticsSection
@@ -113,10 +128,12 @@ const Dashboard: React.FC = () => {
             feedbackStats={feedbackStats}
           />
         );
+      case 'services':
+        return <ServiceManagement />;
       case 'users':
         return <UserManagement />;
-      case 'settings':
-        return <Settings />;
+      // case 'settings':
+      //   return <Settings />;
       default:
         return (
           <div className="text-center py-12">
@@ -126,28 +143,62 @@ const Dashboard: React.FC = () => {
     }
   };
 
+
+
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+      {/* Mobile sidebar backdrop */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        ></div>
+      )}
+      {/* Sidebar */}
+      <div className={`
+        fixed inset-y-0 left-0 z-30 w-64 bg-white transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <Sidebar
+          activeSection={activeSection}
+          onSectionChange={(section) => {
+            setActiveSection(section);
+            setIsSidebarOpen(false);
+          }}
+        />
+      </div>
+
 
       <div className="flex-1 overflow-auto">
-        <div className="p-8">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-800">
-              {activeSection === 'overview' && "Vue d'ensemble"}
-              {activeSection === 'feedback' && "Avis clients"}
-              {activeSection === 'complaints' && "Réclamations"}
-              {activeSection === 'statistics' && "Statistiques"}
-              {activeSection === 'users' && "Utilisateurs"}
-              {activeSection === 'settings' && "Paramètres"}
-            </h1>
+        <div className="p-4 md:p-8">
+          <div className="flex justify-between items-center mb-6 md:mb-8">
+            <div className="flex items-center">
+              <button
+                className="lg:hidden mr-4 p-2 rounded-md hover:bg-gray-100"
+                onClick={toggleSidebar}
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
 
-            <div className="flex space-x-4">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-800">
+                {activeSection === 'overview' && "Vue d'ensemble"}
+                {activeSection === 'feedback' && "Avis clients"}
+                {activeSection === 'complaints' && "Réclamations"}
+                {activeSection === 'statistics' && "Statistiques"}
+                {activeSection === 'users' && "Utilisateurs"}
+                {activeSection === 'settings' && "Paramètres"}
+              </h1>
+            </div>
+
+            <div className="flex space-x-2 md:space-x-4">
               {(activeSection === 'overview' || activeSection === 'feedback') && (
                 <Button
                   variant="outline"
                   onClick={handleExportFeedback}
                   icon={<Download className="h-5 w-5" />}
+                  className="hidden sm:flex"
                 >
                   Exporter les avis
                 </Button>
@@ -158,10 +209,24 @@ const Dashboard: React.FC = () => {
                   variant="outline"
                   onClick={handleExportComplaints}
                   icon={<Download className="h-5 w-5" />}
+                  className="hidden sm:flex"
                 >
                   Exporter les réclamations
                 </Button>
               )}
+
+              {/* Mobile export button */}
+              {(activeSection === 'overview' || activeSection === 'feedback' || activeSection === 'complaints') && (
+                <Button
+                  variant="outline"
+                  onClick={activeSection === 'feedback' ? handleExportFeedback : handleExportComplaints}
+                  icon={<Download className="h-5 w-5" />}
+                  className="sm:hidden"
+                >
+                  Exporter
+                </Button>
+              )}
+
             </div>
           </div>
 

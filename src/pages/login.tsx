@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LogIn, User, Lock, AlertCircle } from 'lucide-react';
+import { LogIn, User, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import api from '../../services/api';
 import { AxiosError } from "axios";
 
@@ -12,6 +12,8 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // état pour afficher/masquer le mot de passe
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,22 +29,23 @@ const Login: React.FC = () => {
     try {
       const res = await api.post('/accounts/api/login/', { username, password });
       const token = res.data.access;
+
       localStorage.setItem('access_token', token);
       localStorage.setItem('refresh_token', res.data.refresh);
-  
+
       const payload = JSON.parse(atob(token.split('.')[1]));
       localStorage.setItem('username', payload.username);
       localStorage.setItem('is_admin', payload.is_admin ? 'true' : 'false');
-  
+
       if (payload.is_admin) {
         navigate('/admin');
         return;
       }
-  
+
       const clientRes = await api.post('/api/client/me/', { user_id: payload.user_id }, {
         headers: { Authorization: `Bearer ${token}` },
       });
-  
+
       localStorage.setItem('client_id', clientRes.data.id);
       localStorage.setItem('client_user_id', clientRes.data.user.id);
       localStorage.setItem('client_nom', clientRes.data.nom);
@@ -50,12 +53,12 @@ const Login: React.FC = () => {
       localStorage.setItem('client_email', clientRes.data.email);
       localStorage.setItem('client_telephone', clientRes.data.telephone);
       localStorage.setItem('client_nom_structure', clientRes.data.nom_structure);
-  
+
       navigate('/');
     } catch (err: unknown) {
       const error = err as AxiosError;
       console.error("Erreur login:", error);
-      console.log("Détail:", error.response?.data);
+      //console.log("Détail:", error.response?.data);
     } finally {
       setIsLoading(false);
     }
@@ -119,7 +122,7 @@ const Login: React.FC = () => {
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"} // Afficher ou masquer le mot de passe
                   autoComplete="current-password"
                   required
                   value={password}
@@ -127,6 +130,12 @@ const Login: React.FC = () => {
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-msc-blue focus:border-msc-blue transition-all"
                   placeholder="••••••••"
                 />
+                <div
+                  onClick={() => setShowPassword(prev => !prev)} // Toggle show password
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                >
+                  {showPassword ? <EyeOff size={20} className="text-gray-400" /> : <Eye size={20} className="text-gray-400" />}
+                </div>
               </div>
             </div>
           </div>
@@ -135,9 +144,8 @@ const Login: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-white bg-yellow-600 hover:bg-yellow-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-msc-blue transition-colors ${
-                isLoading ? 'opacity-70 cursor-not-allowed' : ''
-              }`}
+              className={`w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-white bg-yellow-600 hover:bg-yellow-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-msc-blue transition-colors ${isLoading ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
             >
               {isLoading ? (
                 <>

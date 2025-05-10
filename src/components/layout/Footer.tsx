@@ -15,35 +15,55 @@ const Footer: React.FC = () => {
               <span className="text-xl font-bold">MSC Gabon</span>
             </div>
             <p className="text-gray-300">
-              MSC MEDITERRANEAN SHIPPING COMPANY GABON S.A.    
+              MSC MEDITERRANEAN SHIPPING COMPANY GABON S.A.
             </p>
           </div>
-          
+
           {/* Contact Info */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Contactez-nous</h3>
             <ul className="space-y-2">
               <li className="flex items-center">
                 <Mail className="h-5 w-5 mr-2 text-yellow-400" />
-                <span>ga671-infogabon@msc.com</span>
+                <a
+                  href="mailto:GA671-CustomerServices@msc.com"
+                  className="text-white active:text-yellow-400 hover:underline focus:outline-none"
+                >
+                  GA671-CustomerServices@msc.com
+                </a>
               </li>
+
               <li className="flex items-center">
                 <Phone className="h-5 w-5 mr-2 text-yellow-400" />
-                <span>(+241) 011 70 51 35</span>
+                <a
+                  href="tel:+24174656366"
+                  className="text-white active:text-yellow-400 hover:underline focus:outline-none"
+                >
+                  (+241) 074656366
+                </a>
+                <span className="mx-1 text-white">-</span>
+                <a
+                  href="tel:+24174599422"
+                  className="text-white active:text-yellow-400 hover:underline focus:outline-none"
+                >
+                  (+241) 074599422
+                </a>
               </li>
+
+
               <li className="flex items-center">
                 <MapPin className="h-5 w-5 mr-2 text-yellow-400" />
                 <span>Owendo Business Center, Batiment A, 2ème étage</span>
               </li>
               <li className="flex items-center">
                 <span className='ml-7'>Carrefour SNI - BP 18438 Owendo, GABON</span>
-                <br/>
+                <br />
               </li>
             </ul>
           </div>
-          
+
         </div>
-        
+
         <div className="border-t border-gray-700 mt-8 pt-6 text-center">
           <p className="text-gray-400">&copy; {new Date().getFullYear()} MSC Gabon. Tous droits réservés.</p>
         </div>

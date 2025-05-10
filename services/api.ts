@@ -7,7 +7,6 @@ const api = axios.create({
   },
 });
 
-console.log("URL:", import.meta.env.VITE_API_BASE_URL);
 
 // Refresh token automatiquement si 401
 api.interceptors.response.use(
