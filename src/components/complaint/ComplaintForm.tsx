@@ -48,16 +48,16 @@ const ComplaintForm: React.FC = () => {
     });
 
 
-    // Préremplissage depuis localStorage
-    const prefilled = {
-      nom_structure: localStorage.getItem("client_nom_structure") || '',
-      nom: localStorage.getItem("client_nom") || '',
-      prenom: localStorage.getItem("client_prenom") || '',
-      email: localStorage.getItem("client_email") || '',
-      telephone: localStorage.getItem("client_telephone") || '',
-    };
+    // // Préremplissage depuis localStorage
+    // const prefilled = {
+    //   nom_structure: localStorage.getItem("client_nom_structure") || '',
+    //   nom: localStorage.getItem("client_nom") || '',
+    //   prenom: localStorage.getItem("client_prenom") || '',
+    //   email: localStorage.getItem("client_email") || '',
+    //   telephone: localStorage.getItem("client_telephone") || '',
+    // };
 
-    setFormData(prev => ({ ...prev, ...prefilled }));
+    // setFormData(prev => ({ ...prev, ...prefilled }));
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -96,11 +96,11 @@ const ComplaintForm: React.FC = () => {
     if (!validateForm()) return;
     setIsSubmitting(true);
     try {
-      const client_id = localStorage.getItem("client_id");
-      const payload = { ...formData, client: client_id };
-      const token = localStorage.getItem("access_token");
-      const headers = { Authorization: `Bearer ${token}` };
-      await api.post('/api/reclamations/', payload, { headers });
+      const payload = { ...formData };
+      //const token = localStorage.getItem("access_token");
+      // const headers = { Authorization: `Bearer ${token}` };
+      // await api.post('/api/reclamations/', payload, { headers });
+      await api.post('/api/reclamations/', payload);
       toast.success('Votre réclamation a été soumise avec succès!');
       navigate('/', { state: { fromReclamation: true } });
     } catch (error) {
@@ -176,7 +176,7 @@ const ComplaintForm: React.FC = () => {
             placeholder="Entrez le nom de votre entreprise"
             required
             error={errors.nom_structure}
-            readOnly
+            // readOnly
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -189,7 +189,7 @@ const ComplaintForm: React.FC = () => {
               placeholder="Entrez votre nom"
               required
               error={errors.nom}
-              readOnly
+              // readOnly
             />
             <Input
               id="prenom"
@@ -200,7 +200,7 @@ const ComplaintForm: React.FC = () => {
               placeholder="Entrez votre prénom"
               required
               error={errors.prenom}
-              readOnly
+              // readOnly
             />
           </div>
 
@@ -215,7 +215,7 @@ const ComplaintForm: React.FC = () => {
               placeholder="votre@email.com"
               required
               error={errors.email}
-              readOnly
+              // readOnly
             />
             <Input
               id="telephone"
@@ -226,7 +226,7 @@ const ComplaintForm: React.FC = () => {
               placeholder="Ex: +24174123456"
               required
               error={errors.telephone}
-              readOnly
+              // readOnly
             />
           </div>
 

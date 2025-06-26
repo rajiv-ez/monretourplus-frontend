@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { LogIn, User, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import api from '../../services/api';
@@ -30,31 +31,21 @@ const Login: React.FC = () => {
       const res = await api.post('/accounts/api/login/', { username, password });
       const token = res.data.access;
 
-      localStorage.setItem('access_token', token);
-      localStorage.setItem('refresh_token', res.data.refresh);
-
       const payload = JSON.parse(atob(token.split('.')[1]));
-      localStorage.setItem('username', payload.username);
-      localStorage.setItem('is_admin', payload.is_admin ? 'true' : 'false');
-
-      if (payload.is_admin) {
-        navigate('/admin');
+      console.log("is_admin", payload.is_admin)
+      if (!payload.is_admin) {
+        navigate('/login');
         return;
       }
 
-      const clientRes = await api.post('/api/client/me/', { user_id: payload.user_id }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      localStorage.setItem('access_token', token);
+      localStorage.setItem('refresh_token', res.data.refresh);
+      
+      localStorage.setItem('username', payload.username);
+      localStorage.setItem('is_admin', payload.is_admin ? 'true' : 'false');
 
-      localStorage.setItem('client_id', clientRes.data.id);
-      localStorage.setItem('client_user_id', clientRes.data.user.id);
-      localStorage.setItem('client_nom', clientRes.data.nom);
-      localStorage.setItem('client_prenom', clientRes.data.prenom);
-      localStorage.setItem('client_email', clientRes.data.email);
-      localStorage.setItem('client_telephone', clientRes.data.telephone);
-      localStorage.setItem('client_nom_structure', clientRes.data.nom_structure);
+      navigate('/admin');
 
-      navigate('/');
     } catch (err: unknown) {
       const error = err as AxiosError;
       console.error("Erreur login:", error);
@@ -173,9 +164,9 @@ const Login: React.FC = () => {
             </button>
           </div>
 
-          <div className="mt-10 my-auto text-center font-bold">
+          {/* <div className="mt-10 my-auto text-center font-bold">
             <Link to="/register">ou Créer un compte</Link>
-          </div>
+          </div> */}
 
         </form>
       </motion.div>

@@ -10,9 +10,9 @@ import FeedbackPage from './pages/FeedbackPage';
 import ComplaintPage from './pages/ComplaintPage';
 import AdminPage from './pages/AdminPage';
 import Login from './pages/login';
-import Register from './pages/Register';
-import { User } from 'lucide-react';
-import UserProfilePage from './pages/UserProfilePage';
+
+// import Register from './pages/Register';
+// import UserProfilePage from './pages/UserProfilePage';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
@@ -42,16 +42,11 @@ const ProtectedAdminRoute = ({ children }: { children: JSX.Element }) => {
   return isAdmin ? children : <Navigate to="/login" replace />;
 };
 
-// Vérifie si l'utilisateur est connecté
-const ProtectedUserRoute = ({ children }: { children: JSX.Element }) => {
-  const user = localStorage.getItem('username');
-  return user ? children : <Navigate to="/login" replace />;
-};
 
 const AppRoutes = () => (
   <Routes>
     <Route path="/login" element={<Login />} />
-    <Route path="/register" element={<Register />} />
+    {/* <Route path="/register" element={<Register />} /> */}
     <Route
       path="/"
       element={
@@ -63,21 +58,17 @@ const AppRoutes = () => (
     <Route
       path="/feedback"
       element={
-        <ProtectedUserRoute>
           <Layout>
             <FeedbackPage />
           </Layout>
-        </ProtectedUserRoute>
       }
     />
     <Route
       path="/complaint"
       element={
-        <ProtectedUserRoute>
           <Layout>
             <ComplaintPage />
           </Layout>
-        </ProtectedUserRoute>
       }
     />
     <Route
@@ -90,16 +81,11 @@ const AppRoutes = () => (
         </ProtectedAdminRoute>
       }
     />
-    <Route
-      path="/profile"
-      element={
-        <ProtectedUserRoute>
-          <Layout>
-            <UserProfilePage />
-          </Layout>
-        </ProtectedUserRoute>
-      }
-    />
+
+    {/* <Route path="/profile" element={ <ProtectedUserRoute>
+          <Layout><UserProfilePage /></Layout>
+        </ProtectedUserRoute> } /> */}
+
   </Routes>
 );
 

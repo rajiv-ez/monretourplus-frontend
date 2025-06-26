@@ -47,16 +47,16 @@ const FeedbackForm: React.FC = () => {
 
 
 
-    // Préremplissage depuis localStorage
-    const prefilled = {
-      nom_structure: localStorage.getItem("client_nom_structure") || '',
-      nom: localStorage.getItem("client_nom") || '',
-      prenom: localStorage.getItem("client_prenom") || '',
-      email: localStorage.getItem("client_email") || '',
-      telephone: localStorage.getItem("client_telephone") || '',
-    };
+    // // Préremplissage depuis localStorage
+    // const prefilled = {
+    //   nom_structure: localStorage.getItem("client_nom_structure") || '',
+    //   nom: localStorage.getItem("client_nom") || '',
+    //   prenom: localStorage.getItem("client_prenom") || '',
+    //   email: localStorage.getItem("client_email") || '',
+    //   telephone: localStorage.getItem("client_telephone") || '',
+    // };
 
-    setFormData(prev => ({ ...prev, ...prefilled }));
+    // setFormData(prev => ({ ...prev, ...prefilled }));
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -95,12 +95,12 @@ const FeedbackForm: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      const client_id = localStorage.getItem("client_id");
-      const payload = { ...formData, client: client_id };
-      const token = localStorage.getItem("access_token");
-      const headers = { Authorization: `Bearer ${token}` };
+      const payload = { ...formData };
+      //const token = localStorage.getItem("access_token");
+      //const headers = { Authorization: `Bearer ${token}` };
       // Envoi de l'avis
-      await api.post('/api/avis/', payload, { headers });
+      //await api.post('/api/avis/', payload, { headers });
+      await api.post('/api/avis/', payload);
       toast.success('Votre avis a été enregistré avec succès !');
       navigate('/', { state: { fromFeedback: true } });
     } catch (error) {
@@ -181,7 +181,7 @@ const FeedbackForm: React.FC = () => {
             placeholder="Entrez le nom de votre entreprise"
             required
             error={errors.nom_structure}
-            readOnly={true}
+            // readOnly={true}
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -194,7 +194,7 @@ const FeedbackForm: React.FC = () => {
               placeholder="Entrez votre nom"
               required
               error={errors.nom}
-              readOnly={true}
+              // readOnly={true}
             />
             <Input
               id="prenom"
@@ -205,7 +205,7 @@ const FeedbackForm: React.FC = () => {
               placeholder="Entrez votre prénom"
               required
               error={errors.prenom}
-              readOnly={true}
+              // readOnly={true}
             />
           </div>
 
@@ -220,7 +220,7 @@ const FeedbackForm: React.FC = () => {
               placeholder="votre@email.com"
               required
               error={errors.email}
-              readOnly={true}
+              // readOnly={true}
             />
             <Input
               id="telephone"
@@ -230,7 +230,7 @@ const FeedbackForm: React.FC = () => {
               onChange={handleChange}
               placeholder="06XXXXXXXX"
               error={errors.telephone}
-              readOnly={true}
+              // readOnly={true}
             />
           </div>
 
