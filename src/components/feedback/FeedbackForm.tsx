@@ -1,4 +1,3 @@
-// VERSION ADAPTÉE : Garde le formulaire d'origine, avec API de ton backend (Django/DRF)
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Send } from 'lucide-react';
@@ -11,14 +10,10 @@ import toast from 'react-hot-toast';
 import api from '../../../services/api';
 
 interface FormErrors {
-  nom_structure?: string;
-  nom?: string;
-  prenom?: string;
-  email?: string;
-  telephone?: string;
   service_concerne?: string;
   note?: string;
   commentaire?: string;
+  email?: string;
 }
 
 const FeedbackForm: React.FC = () => {
@@ -26,15 +21,13 @@ const FeedbackForm: React.FC = () => {
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [wantsReply, setWantsReply] = useState(false);
+
   const [formData, setFormData] = useState({
-    nom_structure: '',
-    nom: '',
-    prenom: '',
-    email: '',
-    telephone: '',
     service_concerne: '',
     note: 0,
     commentaire: '',
+    email: '',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -44,19 +37,6 @@ const FeedbackForm: React.FC = () => {
       setServices(res.data.results);
       setLoading(false);
     });
-
-
-
-    // // Préremplissage depuis localStorage
-    // const prefilled = {
-    //   nom_structure: localStorage.getItem("client_nom_structure") || '',
-    //   nom: localStorage.getItem("client_nom") || '',
-    //   prenom: localStorage.getItem("client_prenom") || '',
-    //   email: localStorage.getItem("client_email") || '',
-    //   telephone: localStorage.getItem("client_telephone") || '',
-    // };
-
-    // setFormData(prev => ({ ...prev, ...prefilled }));
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -74,17 +54,24 @@ const FeedbackForm: React.FC = () => {
     }
   };
 
+  const handleCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    setWantsReply(checked);
+    if (!checked) {
+      setFormData(prev => ({ ...prev, email: '' }));
+      setErrors(prev => ({ ...prev, email: undefined }));
+    }
+  };
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-    if (!formData.nom_structure.trim()) newErrors.nom_structure = 'Le nom de l’entreprise est requis';
-    if (!formData.nom.trim()) newErrors.nom = 'Le nom est requis';
-    if (!formData.prenom.trim()) newErrors.prenom = 'Le prénom est requis';
-    if (!formData.email.trim()) newErrors.email = 'L’email est requis';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Format email invalide';
     if (!formData.service_concerne) newErrors.service_concerne = 'Veuillez sélectionner un service';
     if (formData.note === 0) newErrors.note = 'Veuillez sélectionner une note';
     if (formData.note <= 3 && !formData.commentaire.trim()) newErrors.commentaire = 'Commentaire requis pour note ≤ 3';
-
+    if (wantsReply) {
+      if (!formData.email.trim()) newErrors.email = 'L’email est requis';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Format email invalide';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -96,10 +83,6 @@ const FeedbackForm: React.FC = () => {
 
     try {
       const payload = { ...formData };
-      //const token = localStorage.getItem("access_token");
-      //const headers = { Authorization: `Bearer ${token}` };
-      // Envoi de l'avis
-      //await api.post('/api/avis/', payload, { headers });
       await api.post('/api/avis/', payload);
       toast.success('Votre avis a été enregistré avec succès !');
       navigate('/', { state: { fromFeedback: true } });
@@ -120,10 +103,6 @@ const FeedbackForm: React.FC = () => {
 
       <Card className="transition-all duration-300 hover:shadow-lg">
         <form onSubmit={handleSubmit} className="space-y-6">
-
-
-
-
           <div>
             <label className="block mb-2 text-sm font-medium text-gray-700">Service concerné</label>
             <select
@@ -167,49 +146,18 @@ const FeedbackForm: React.FC = () => {
             rows={5}
           />
 
-
-
-
-
-
-          <Input
-            id="nom_structure"
-            name="nom_structure"
-            label="Nom de l'entreprise"
-            value={formData.nom_structure}
-            onChange={handleChange}
-            placeholder="Entrez le nom de votre entreprise"
-            required
-            error={errors.nom_structure}
-            // readOnly={true}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              id="nom"
-              name="nom"
-              label="Nom"
-              value={formData.nom}
-              onChange={handleChange}
-              placeholder="Entrez votre nom"
-              required
-              error={errors.nom}
-              // readOnly={true}
+          <div className="flex items-center space-x-2">
+            <input
+              id="wantsReply"
+              type="checkbox"
+              checked={wantsReply}
+              onChange={handleCheckbox}
+              className="form-checkbox h-5 w-5 text-blue-600"
             />
-            <Input
-              id="prenom"
-              name="prenom"
-              label="Prénom"
-              value={formData.prenom}
-              onChange={handleChange}
-              placeholder="Entrez votre prénom"
-              required
-              error={errors.prenom}
-              // readOnly={true}
-            />
+            <label htmlFor="wantsReply" className="text-sm text-gray-700">Recevoir une réponse à mon avis</label>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {wantsReply && (
             <Input
               id="email"
               name="email"
@@ -220,19 +168,8 @@ const FeedbackForm: React.FC = () => {
               placeholder="votre@email.com"
               required
               error={errors.email}
-              // readOnly={true}
             />
-            <Input
-              id="telephone"
-              name="telephone"
-              label="Téléphone (facultatif)"
-              value={formData.telephone}
-              onChange={handleChange}
-              placeholder="06XXXXXXXX"
-              error={errors.telephone}
-              // readOnly={true}
-            />
-          </div>
+          )}
 
           <div className="flex justify-center pt-4">
             <Button

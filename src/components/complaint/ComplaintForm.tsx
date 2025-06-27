@@ -14,10 +14,6 @@ interface FormErrors {
   description?: string;
   service_concerne?: string;
   email?: string;
-  telephone?: string;
-  nom_structure?: string;
-  nom?: string;
-  prenom?: string;
   booking_number?: string;
 }
 
@@ -26,17 +22,14 @@ const ComplaintForm: React.FC = () => {
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [wantsReply, setWantsReply] = useState(false);
 
   const [formData, setFormData] = useState({
     sujet: '',
     description: '',
     service_concerne: '',
-    nom_structure: '',
-    nom: '',
-    prenom: '',
-    email: '',
-    telephone: '',
     booking_number: '',
+    email: '',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -46,18 +39,6 @@ const ComplaintForm: React.FC = () => {
       setServices(res.data.results);
       setLoading(false);
     });
-
-
-    // // Préremplissage depuis localStorage
-    // const prefilled = {
-    //   nom_structure: localStorage.getItem("client_nom_structure") || '',
-    //   nom: localStorage.getItem("client_nom") || '',
-    //   prenom: localStorage.getItem("client_prenom") || '',
-    //   email: localStorage.getItem("client_email") || '',
-    //   telephone: localStorage.getItem("client_telephone") || '',
-    // };
-
-    // setFormData(prev => ({ ...prev, ...prefilled }));
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -68,8 +49,16 @@ const ComplaintForm: React.FC = () => {
     }
   };
 
+  const handleCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    setWantsReply(checked);
+    if (!checked) {
+      setFormData(prev => ({ ...prev, email: '' }));
+      setErrors(prev => ({ ...prev, email: undefined }));
+    }
+  };
+
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const validatePhone = (phone: string) => /^\+?[0-9]{6,15}$/.test(phone);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -78,14 +67,11 @@ const ComplaintForm: React.FC = () => {
     if (!formData.description.trim()) newErrors.description = 'La description est requise';
     else if (formData.description.length < 20) newErrors.description = 'Minimum 20 caractères requis';
     if (!formData.service_concerne) newErrors.service_concerne = 'Veuillez sélectionner un service';
-    if (!formData.email.trim()) newErrors.email = "L'email est requis";
-    else if (!validateEmail(formData.email)) newErrors.email = 'Format d’email invalide';
-    if (!formData.telephone.trim()) newErrors.telephone = 'Téléphone requis';
-    else if (!validatePhone(formData.telephone)) newErrors.telephone = 'Format de téléphone invalide';
     if (!formData.booking_number.trim()) newErrors.booking_number = 'Numéro de booking requis';
-    if (!formData.nom_structure.trim()) newErrors.nom_structure = 'Nom entreprise requis';
-    if (!formData.nom.trim()) newErrors.nom = 'Nom requis';
-    if (!formData.prenom.trim()) newErrors.prenom = 'Prénom requis';
+    if (wantsReply) {
+      if (!formData.email.trim()) newErrors.email = "L'email est requis";
+      else if (!validateEmail(formData.email)) newErrors.email = 'Format d’email invalide';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -97,9 +83,6 @@ const ComplaintForm: React.FC = () => {
     setIsSubmitting(true);
     try {
       const payload = { ...formData };
-      //const token = localStorage.getItem("access_token");
-      // const headers = { Authorization: `Bearer ${token}` };
-      // await api.post('/api/reclamations/', payload, { headers });
       await api.post('/api/reclamations/', payload);
       toast.success('Votre réclamation a été soumise avec succès!');
       navigate('/', { state: { fromReclamation: true } });
@@ -167,44 +150,18 @@ const ComplaintForm: React.FC = () => {
             rows={6}
           />
 
-          <Input
-            id="nom_structure"
-            name="nom_structure"
-            label="Nom de l'entreprise"
-            value={formData.nom_structure}
-            onChange={handleChange}
-            placeholder="Entrez le nom de votre entreprise"
-            required
-            error={errors.nom_structure}
-            // readOnly
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              id="nom"
-              name="nom"
-              label="Nom"
-              value={formData.nom}
-              onChange={handleChange}
-              placeholder="Entrez votre nom"
-              required
-              error={errors.nom}
-              // readOnly
+          <div className="flex items-center space-x-2">
+            <input
+              id="wantsReply"
+              type="checkbox"
+              checked={wantsReply}
+              onChange={handleCheckbox}
+              className="form-checkbox h-5 w-5 text-blue-600"
             />
-            <Input
-              id="prenom"
-              name="prenom"
-              label="Prénom"
-              value={formData.prenom}
-              onChange={handleChange}
-              placeholder="Entrez votre prénom"
-              required
-              error={errors.prenom}
-              // readOnly
-            />
+            <label htmlFor="wantsReply" className="text-sm text-gray-700">Recevoir une réponse à ma réclamation</label>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {wantsReply && (
             <Input
               id="email"
               name="email"
@@ -215,20 +172,8 @@ const ComplaintForm: React.FC = () => {
               placeholder="votre@email.com"
               required
               error={errors.email}
-              // readOnly
             />
-            <Input
-              id="telephone"
-              name="telephone"
-              label="Téléphone"
-              value={formData.telephone}
-              onChange={handleChange}
-              placeholder="Ex: +24174123456"
-              required
-              error={errors.telephone}
-              // readOnly
-            />
-          </div>
+          )}
 
           <div className="flex justify-center pt-4">
             <Button
