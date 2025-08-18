@@ -56,6 +56,13 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ initialComplaints }) =>
       const headers = { Authorization: `Bearer ${token}` };
 
       await api.patch(`/api/reclamations/${id}/statut/`, { statut }, { headers });
+      // Mettre à jour l'état local
+      setComplaints(prevComplaints => 
+        prevComplaints.map(complaint => 
+          complaint.id === id ? { ...complaint, statut } : complaint
+        )
+      );
+      
       toast.success("Statut mis à jour !");
     } catch (err: any) {
       console.error(err);
