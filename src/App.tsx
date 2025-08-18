@@ -38,7 +38,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 // Vérifie si l'utilisateur est admin
 const ProtectedAdminRoute = ({ children }: { children: JSX.Element }) => {
   const isAdmin = localStorage.getItem('is_admin') === 'true';
-  console.log('ProtectedAdminRoute - isAdmin:', isAdmin); // Debugging line
   return isAdmin ? children : <Navigate to="/login" replace />;
 };
 
