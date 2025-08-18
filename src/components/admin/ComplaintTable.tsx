@@ -112,10 +112,11 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ initialComplaints }) =>
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
+              <th onClick={() => handleSort('numero_suivi')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">N° suivi</th>
+              <th onClick={() => handleSort('email')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">Email</th>
               <th onClick={() => handleSort('statut')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">Statut</th>
               <th onClick={() => handleSort('sujet')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">Sujet</th>
-              <th onClick={() => handleSort('categorie_detail')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">Catégorie</th>
-              <th onClick={() => handleSort('nom_structure')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">Entreprise</th>
+              <th onClick={() => handleSort('booking_number')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">N° Booking</th>
               <th onClick={() => handleSort('date_submitted')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">Date</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
@@ -123,20 +124,22 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ initialComplaints }) =>
           <tbody className="bg-white divide-y divide-gray-200">
             {sortedComplaints.map((item) => (
               <tr key={item.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap overflow-hidden text-clip text-sm text-yellow-600 font-medium">
+                  {item.numero_suivi}
+                  </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">{item.email}</div>
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(item.statut)}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">{item.sujet}</div>
                   <div className="text-xs text-gray-500 max-w-xs truncate">{item.description}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {item.categorie_detail?.nom || 'Inconnue'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{item.nom_structure}</div>
-                  <div className="text-xs text-gray-500">{item.prenom} {item.nom}</div>
+                  {item.booking_number || 'Inconnue'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {format(new Date(item.date_submitted), 'dd MMM yyyy', { locale: fr })}
+                  {format(new Date(item.date_submitted), 'dd MMM yyyy à HH:mm', { locale: fr })}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex space-x-2">
