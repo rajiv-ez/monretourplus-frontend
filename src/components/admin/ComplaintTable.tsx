@@ -55,7 +55,7 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ initialComplaints }) =>
 
       const headers = { Authorization: `Bearer ${token}` };
 
-      await api.patch(`/reclamations/${id}/statut/`, { statut }, { headers });
+      await api.patch(`/api/reclamations/${id}/statut/`, { statut }, { headers });
       toast.success("Statut mis à jour !");
     } catch (err: any) {
       console.error(err);
