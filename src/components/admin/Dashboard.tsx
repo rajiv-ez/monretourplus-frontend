@@ -1,5 +1,5 @@
 // Dashboard.tsx - Adapté à ton backend DRF (/api/avis/full/, /api/reclamations/full/)
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Download } from 'lucide-react';
 import Button from '../common/Button';
 import { exportToCSV } from '../../utils/helpers';
@@ -9,39 +9,37 @@ import StatisticsSection from './StatisticsSection';
 import UserManagement from './UserManagement';
 import ServiceManagement from './ServicesManagement';
 import Sidebar from './Sidebar';
-import api from '../../../services/api';
+import { usePaginatedApi } from '../../hooks/usePaginatedApi';
 import { calculateComplaintStats, calculateFeedbackStats, calculateMonthlyStats } from '../../utils/stats';
 import { Complaint, Feedback } from '../../types';
 
 const Dashboard: React.FC = () => {
   const [activeSection, setActiveSection] = useState('overview');
-  const [feedbackData, setFeedbackData] = useState<Feedback[]>([]);
-  const [complaintData, setComplaintData] = useState<Complaint[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem('access_token');
-        const headers = { Authorization: `Bearer ${token}` };
-        const [feedbackRes, complaintRes] = await Promise.all([
-          api.get('/api/avis/full/', { headers }),
-          api.get('/api/reclamations/full/', { headers })
+  // Hook paginé pour les avis
+  const {
+    data: feedbackData,
+    next: feedbackNext,
+    previous: feedbackPrev,
+    count: feedbackCount,
+    loading: feedbackLoading,
+    setPageUrl: setFeedbackUrl,
+    // reset: resetFeedback
+  } = usePaginatedApi<Feedback>('/api/avis/full/');
 
-        ]);
-
-        setFeedbackData(feedbackRes.data.results);
-        setComplaintData(complaintRes.data.results);
-      } catch (err) {
-        console.error('Erreur de récupération des données :', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+  // Hook paginé pour les réclamations
+  const {
+    data: complaintData,
+    next: complaintNext,
+    previous: complaintPrev,
+    count: complaintCount,
+    loading: complaintLoading,
+    setPageUrl: setComplaintUrl,
+    // reset: resetComplaint
+  } = usePaginatedApi<Complaint>('/api/reclamations/full/');
 
 
-  }, []);
+  // Plus besoin d'useEffect, tout est géré par les hooks paginés
 
   const monthlyStats = calculateMonthlyStats(feedbackData, complaintData);
   const complaintStats = calculateComplaintStats(complaintData);
@@ -62,11 +60,54 @@ const Dashboard: React.FC = () => {
   const closeSidebar = () => {
     setIsSidebarOpen(false);
   };
-  const handleSectionChange = (section: string) => {
-    setActiveSection(section);
-    closeSidebar();
-  };
 
+
+  // Composant factorisé pour la pagination
+  const PaginationControls = ({ next, previous, count, dataLength, setPageUrl }: {
+    next: string | null;
+    previous: string | null;
+    count: number;
+    dataLength: number;
+    setPageUrl: (url: string) => void;
+  }) => {
+    // Pour éviter le hardcoding, on retire le baseUrl si présent
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    const getPageNumber = (url: string | null) => {
+      if (!url) return 1;
+      const u = url.startsWith('http') ? url : baseUrl + url;
+      const page = new URL(u).searchParams.get('page');
+      return page ? Number(page) + 1 : 1;
+    };
+    // Calcul du numéro de page actuel
+    let currentPage = 1;
+    if (previous) {
+      currentPage = getPageNumber(previous);
+    }
+    const totalPages = Math.ceil(count / 10);
+    return (
+      <div className="flex justify-between items-center mt-4">
+        <button
+          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          onClick={() => previous && setPageUrl(previous.startsWith(baseUrl) ? previous.slice(baseUrl.length) : previous)}
+          disabled={!previous}
+        >
+          Précédent
+        </button>
+        <span className="text-gray-600">
+          {dataLength > 0 && (
+            `Page ${currentPage} / ${totalPages}`
+          )}
+        </span>
+        <button
+          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          onClick={() => next && setPageUrl(next.startsWith(baseUrl) ? next.slice(baseUrl.length) : next)}
+          disabled={!next}
+        >
+          Suivant
+        </button>
+      </div>
+    );
+  };
 
   const renderContent = () => {
     switch (activeSection) {
@@ -81,7 +122,6 @@ const Dashboard: React.FC = () => {
                   {((feedbackStats.totalPositive / feedbackData.length) * 100).toFixed(1)}% du total
                 </p>
               </div>
-
               <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-lg border-l-4 border-red-500">
                 <p className="text-gray-600 mb-1">Avis négatifs</p>
                 <p className="text-4xl font-bold text-red-600">{feedbackStats.totalNegative}</p>
@@ -89,7 +129,6 @@ const Dashboard: React.FC = () => {
                   {((feedbackStats.totalNegative / feedbackData.length) * 100).toFixed(1)}% du total
                 </p>
               </div>
-
               <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-lg border-l-4 border-yellow-500">
                 <p className="text-gray-600 mb-1">Réclamations en attente</p>
                 <p className="text-4xl font-bold text-yellow-600">
@@ -99,7 +138,6 @@ const Dashboard: React.FC = () => {
                   {(((complaintStats.totalPending + complaintStats.totalInProgress) / complaintData.length) * 100).toFixed(1)}% du total
                 </p>
               </div>
-
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border-l-4 border-blue-500">
                 <p className="text-gray-600 mb-1">Réclamations résolues</p>
                 <p className="text-4xl font-bold text-blue-600">{complaintStats.totalResolved}</p>
@@ -108,7 +146,6 @@ const Dashboard: React.FC = () => {
                 </p>
               </div>
             </div>
-
             <StatisticsSection
               monthlyStats={monthlyStats}
               complaintStats={complaintStats}
@@ -117,9 +154,31 @@ const Dashboard: React.FC = () => {
           </>
         );
       case 'feedback':
-        return <FeedbackTable feedback={feedbackData} />;
+        return (
+          <>
+            <FeedbackTable feedback={feedbackData} />
+            <PaginationControls
+              next={feedbackNext}
+              previous={feedbackPrev}
+              count={feedbackCount}
+              dataLength={feedbackData.length}
+              setPageUrl={setFeedbackUrl}
+            />
+          </>
+        );
       case 'complaints':
-        return <ComplaintTable initialComplaints={complaintData} />;
+        return (
+          <>
+            <ComplaintTable initialComplaints={complaintData} />
+            <PaginationControls
+              next={complaintNext}
+              previous={complaintPrev}
+              count={complaintCount}
+              dataLength={complaintData.length}
+              setPageUrl={setComplaintUrl}
+            />
+          </>
+        );
       case 'statistics':
         return (
           <StatisticsSection
@@ -230,7 +289,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {loading ? (
+          {(feedbackLoading || complaintLoading) ? (
             <div className="text-center py-12 text-gray-500">Chargement des données...</div>
           ) : (
             renderContent()
@@ -242,18 +301,3 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
-
-
-function setFeedbackData(feedbackJson: any) {
-  throw new Error('Function not implemented.');
-}
-
-
-function setComplaintData(complaintJson: any) {
-  throw new Error('Function not implemented.');
-}
-
-
-function setLoading(arg0: boolean) {
-  throw new Error('Function not implemented.');
-}
