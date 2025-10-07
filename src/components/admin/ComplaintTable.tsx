@@ -85,14 +85,11 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ initialComplaints }) =>
     }
   };
 
-
-
-
   const filteredComplaints = (complaintsList || []).filter(item => {
     const matchesSearch = (
-      item.sujet.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.nom_structure.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.sujet|| "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.description|| "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.nom_structure|| "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       `${item.prenom} ${item.nom}`.toLowerCase().includes(searchTerm.toLowerCase())
     );
     const matchesStatus = statusFilter === 'all' || item.statut === statusFilter;
