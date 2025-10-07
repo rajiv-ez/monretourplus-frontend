@@ -88,7 +88,7 @@ const UserManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-800">Gestion des utilisateurs admin</h2>
+        <h2 className="text-xl font-semibold text-gray-800">Gestion des utilisateurs de l'espace admin</h2>
         <Button
           variant="primary"
           onClick={() => setShowForm(true)}
@@ -161,7 +161,7 @@ const UserManagement: React.FC = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <span className={`px-2 inline-flex text-xs font-semibold rounded-full ${user.is_superuser ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}`}>
-                    {user.is_superuser ? 'Admin' : 'Utilisateur'}
+                    {user.is_superuser ? 'Admin' : 'Simple utilisateur'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">

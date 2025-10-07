@@ -48,7 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => 
         <h2 className="text-xl font-bold text-gray-800 mb-6">Administration</h2>
         <nav className="space-y-2">
           {menuItems.map((item) => (
-            (item.id !== 'users' || isSuperUser) &&
+            ((item.id !== 'users' && item.id !== 'services') || isSuperUser) &&
 
             <SidebarItem
               key={item.id}

@@ -233,6 +233,13 @@ const Dashboard: React.FC = () => {
           />
         );
       case 'services':
+        if (!isSuperUser) {
+          return (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Accès refusé. Vous n'avez pas les permissions nécessaires pour accéder à cette section.</p>
+            </div>
+          );
+        }
         return <ServiceManagement />;
       case 'users':
         if (!isSuperUser) {
