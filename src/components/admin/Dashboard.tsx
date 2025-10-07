@@ -10,10 +10,12 @@ import UserManagement from './UserManagement';
 import ServiceManagement from './ServicesManagement';
 import Sidebar from './Sidebar';
 import { usePaginatedApi } from '../../hooks/usePaginatedApi';
-import { calculateComplaintStats, calculateFeedbackStats, calculateMonthlyStats } from '../../utils/stats';
+import { useGlobalStats } from '../../hooks/useGlobalStats';
 import { Complaint, Feedback } from '../../types';
 
 const Dashboard: React.FC = () => {
+  const isSuperUser = localStorage.getItem('is_superuser') === 'true';
+
   const [activeSection, setActiveSection] = useState('overview');
 
   // Hook paginé pour les avis
@@ -39,11 +41,8 @@ const Dashboard: React.FC = () => {
   } = usePaginatedApi<Complaint>('/api/reclamations/full/');
 
 
-  // Plus besoin d'useEffect, tout est géré par les hooks paginés
-
-  const monthlyStats = calculateMonthlyStats(feedbackData, complaintData);
-  const complaintStats = calculateComplaintStats(complaintData);
-  const feedbackStats = calculateFeedbackStats(feedbackData);
+  // Stats globales pour overview/statistics
+  const { feedbackStats, complaintStats, monthlyStats, loading: statsLoading, error: statsError } = useGlobalStats();
 
   const handleExportFeedback = () => {
     exportToCSV(feedbackData, 'feedback-export');
@@ -56,9 +55,6 @@ const Dashboard: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
-  };
-  const closeSidebar = () => {
-    setIsSidebarOpen(false);
   };
 
 
@@ -112,56 +108,99 @@ const Dashboard: React.FC = () => {
   const renderContent = () => {
     switch (activeSection) {
       case 'overview':
+        if (statsLoading) {
+          return <div className="text-center py-12 text-gray-500">Chargement des statistiques...</div>;
+        }
+        if (statsError) {
+          return <div className="text-center py-12 text-red-500">{statsError}</div>;
+        }
         return (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
               <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg border-l-4 border-green-500">
                 <p className="text-gray-600 mb-1">Avis positifs</p>
-                <p className="text-4xl font-bold text-green-600">{feedbackStats.totalPositive}</p>
+                <p className="text-4xl font-bold text-green-600">{feedbackStats?.totalPositive ?? '—'}</p>
                 <p className="text-sm text-gray-500 mt-1">
-                  {((feedbackStats.totalPositive / feedbackData.length) * 100).toFixed(1)}% du total
+                  {feedbackStats && feedbackStats.totalPositive !== undefined && feedbackStats.totalNeutral !== undefined && feedbackStats.totalNegative !== undefined
+                    ? `${(
+                        (feedbackStats.totalPositive /
+                          (feedbackStats.totalPositive + feedbackStats.totalNeutral + feedbackStats.totalNegative || 1)) *
+                        100
+                      ).toFixed(1)}% du total`
+                    : '—'}
+                </p>
+              </div>
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-lg border-l-4 border-orange-500">
+                <p className="text-gray-600 mb-1">Avis neutres</p>
+                <p className="text-4xl font-bold text-red-600">{feedbackStats?.totalNeutral ?? '—'}</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {feedbackStats && feedbackStats.totalPositive !== undefined && feedbackStats.totalNeutral !== undefined && feedbackStats.totalNegative !== undefined
+                    ? `${(
+                        (feedbackStats.totalNeutral /
+                          (feedbackStats.totalPositive + feedbackStats.totalNeutral + feedbackStats.totalNegative || 1)) *
+                        100
+                      ).toFixed(1)}% du total`
+                    : '—'}
                 </p>
               </div>
               <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-lg border-l-4 border-red-500">
                 <p className="text-gray-600 mb-1">Avis négatifs</p>
-                <p className="text-4xl font-bold text-red-600">{feedbackStats.totalNegative}</p>
+                <p className="text-4xl font-bold text-red-600">{feedbackStats?.totalNegative ?? '—'}</p>
                 <p className="text-sm text-gray-500 mt-1">
-                  {((feedbackStats.totalNegative / feedbackData.length) * 100).toFixed(1)}% du total
+                  {feedbackStats && feedbackStats.totalPositive !== undefined && feedbackStats.totalNeutral !== undefined && feedbackStats.totalNegative !== undefined
+                    ? `${(
+                        (feedbackStats.totalNegative /
+                          (feedbackStats.totalPositive + feedbackStats.totalNeutral + feedbackStats.totalNegative || 1)) *
+                        100
+                      ).toFixed(1)}% du total`
+                    : '—'}
                 </p>
               </div>
               <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-lg border-l-4 border-yellow-500">
                 <p className="text-gray-600 mb-1">Réclamations en attente</p>
                 <p className="text-4xl font-bold text-yellow-600">
-                  {complaintStats.totalPending + complaintStats.totalInProgress}
+                  {complaintStats ? complaintStats.totalPending + complaintStats.totalInProgress : '—'}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
-                  {(((complaintStats.totalPending + complaintStats.totalInProgress) / complaintData.length) * 100).toFixed(1)}% du total
+                  {complaintStats && complaintStats.totalPending !== undefined && complaintStats.totalInProgress !== undefined && complaintStats.totalResolved !== undefined
+                    ? `${(
+                        ((complaintStats.totalPending + complaintStats.totalInProgress) /
+                          (complaintStats.totalPending + complaintStats.totalInProgress + complaintStats.totalResolved || 1)) *
+                        100
+                      ).toFixed(1)}% du total`
+                    : '—'}
                 </p>
               </div>
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border-l-4 border-blue-500">
                 <p className="text-gray-600 mb-1">Réclamations résolues</p>
-                <p className="text-4xl font-bold text-blue-600">{complaintStats.totalResolved}</p>
+                <p className="text-4xl font-bold text-blue-600">{complaintStats?.totalResolved ?? '—'}</p>
                 <p className="text-sm text-gray-500 mt-1">
-                  {((complaintStats.totalResolved / complaintData.length) * 100).toFixed(1)}% du total
+                  {complaintStats && complaintStats.totalPending !== undefined && complaintStats.totalInProgress !== undefined && complaintStats.totalResolved !== undefined
+                    ? `${(
+                        (complaintStats.totalResolved /
+                          (complaintStats.totalPending + complaintStats.totalInProgress + complaintStats.totalResolved || 1)) *
+                        100
+                      ).toFixed(1)}% du total`
+                    : '—'}
                 </p>
               </div>
             </div>
             <StatisticsSection
-              monthlyStats={monthlyStats}
-              complaintStats={complaintStats}
-              feedbackStats={feedbackStats}
+              monthlyStats={monthlyStats || []}
+              complaintStats={complaintStats || { totalPending: 0, totalInProgress: 0, totalResolved: 0, averageResolutionTime: 0, resolutionsByCategory: [] }}
+              feedbackStats={feedbackStats || { totalPositive: 0, totalNegative: 0, totalNeutral: 0, averageRating: 0, ratingsByDepartment: [] }}
             />
           </>
         );
       case 'feedback':
         return (
           <>
-            <FeedbackTable feedback={feedbackData} />
+            <FeedbackTable feedback={feedbackData || []} />
             <PaginationControls
               next={feedbackNext}
               previous={feedbackPrev}
               count={feedbackCount}
-              dataLength={feedbackData.length}
+              dataLength={Array.isArray(feedbackData)?feedbackData.length:0}
               setPageUrl={setFeedbackUrl}
             />
           </>
@@ -169,27 +208,40 @@ const Dashboard: React.FC = () => {
       case 'complaints':
         return (
           <>
-            <ComplaintTable initialComplaints={complaintData} />
+            <ComplaintTable initialComplaints={complaintData || []} />
             <PaginationControls
               next={complaintNext}
               previous={complaintPrev}
               count={complaintCount}
-              dataLength={complaintData.length}
+              dataLength={Array.isArray(complaintData)?complaintData.length:0}
               setPageUrl={setComplaintUrl}
             />
           </>
         );
       case 'statistics':
+        if (statsLoading) {
+          return <div className="text-center py-12 text-gray-500">Chargement des statistiques...</div>;
+        }
+        if (statsError) {
+          return <div className="text-center py-12 text-red-500">{statsError}</div>;
+        }
         return (
           <StatisticsSection
-            monthlyStats={monthlyStats}
-            complaintStats={complaintStats}
-            feedbackStats={feedbackStats}
+            monthlyStats={monthlyStats || []}
+            complaintStats={complaintStats || { totalPending: 0, totalInProgress: 0, totalResolved: 0, averageResolutionTime: 0, resolutionsByCategory: [] }}
+            feedbackStats={feedbackStats || { totalPositive: 0, totalNegative: 0, totalNeutral: 0, averageRating: 0, ratingsByDepartment: [] }}
           />
         );
       case 'services':
         return <ServiceManagement />;
       case 'users':
+        if (!isSuperUser) {
+          return (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Accès refusé. Vous n'avez pas les permissions nécessaires pour accéder à cette section.</p>
+            </div>
+          );
+        }
         return <UserManagement />;
       // case 'settings':
       //   return <Settings />;

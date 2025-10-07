@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { formatDate } from '../../utils/helpers';
-import { ThumbsUp, ThumbsDown, Meh } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Meh, Trash } from 'lucide-react';
+import Button from '../common/Button';
 import { Feedback } from '../../types';
+import { deleteAvis } from '../../services/avisService';
+import toast from 'react-hot-toast';
 
 interface FeedbackTableProps {
   feedback: Feedback[];
@@ -9,6 +12,20 @@ interface FeedbackTableProps {
 
 const FeedbackTable: React.FC<FeedbackTableProps> = ({ feedback }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [feedbackList, setFeedbackList] = useState<Feedback[]>(feedback);
+
+  const isSuperUser = localStorage.getItem('is_superuser') === 'true';
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Confirmer la suppression de cet avis ?')) return;
+    try {
+      await deleteAvis(id);
+      setFeedbackList(prev => prev.filter(item => item.id !== id));
+      toast.success('Avis supprimé avec succès');
+    } catch (err: any) {
+      toast.error('Erreur lors de la suppression');
+    }
+  };
   const [sortConfig, setSortConfig] = useState<{ key: keyof Feedback; direction: 'ascending' | 'descending' }>({
     key: 'date_submitted',
     direction: 'descending'
@@ -32,7 +49,7 @@ const FeedbackTable: React.FC<FeedbackTableProps> = ({ feedback }) => {
     setSortConfig({ key, direction });
   };
   
-  const filteredFeedback = feedback.filter(item => {
+  const filteredFeedback = feedbackList.filter(item => {
     return (
       (item.nom_structure|| "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (item.nom|| "").toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -104,6 +121,7 @@ const FeedbackTable: React.FC<FeedbackTableProps> = ({ feedback }) => {
               >
                 Commentaire
               </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -125,7 +143,6 @@ const FeedbackTable: React.FC<FeedbackTableProps> = ({ feedback }) => {
                   <div className="text-sm text-gray-900">{`${item.nom ?? ''} ${item.prenom ?? ''}`}</div>
                   <div className="text-xs text-gray-500">{item.email}</div>
                 </td>
-                
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {formatDate(item.date_submitted)}
                 </td>
@@ -134,10 +151,26 @@ const FeedbackTable: React.FC<FeedbackTableProps> = ({ feedback }) => {
                     {item.commentaire || <span className="italic text-gray-400">Pas de commentaire</span>}
                   </div>
                 </td>
+
+                
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div className="flex space-x-2">
+                    {isSuperUser && (
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleDelete(item.id)}
+                        icon={<Trash className="h-4 w-4" />}
+                      >
+                        Supprimer
+                      </Button>
+                    )}
+                  </div>
+                </td>
               </tr>
             ))}
             
-            {sortedFeedback.length === 0 && (
+            {Array.isArray(sortedFeedback) && sortedFeedback.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
                   Aucun avis trouvé

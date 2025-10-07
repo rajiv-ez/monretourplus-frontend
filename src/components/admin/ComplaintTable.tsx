@@ -1,10 +1,11 @@
+import { deleteReclamation } from '../../services/reclamationService';
+import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Clock, CheckCircle, AlertCircle, Trash } from 'lucide-react';
 import { Complaint } from '../../types';
 import Button from '../common/Button';
-import toast from 'react-hot-toast';
 import api from '../../../services/api';
 
 
@@ -15,6 +16,20 @@ interface ComplaintTableProps {
 const ComplaintTable: React.FC<ComplaintTableProps> = ({ initialComplaints }) => {
   const [complaints, setComplaints] = useState<Complaint[]>(initialComplaints);
   const [searchTerm, setSearchTerm] = useState('');
+  const [complaintsList, setComplaintsList] = useState<Complaint[]>(initialComplaints);
+
+  const isSuperUser = localStorage.getItem('is_superuser') === 'true';
+  
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Confirmer la suppression de cette réclamation ?')) return;
+    try {
+      await deleteReclamation(id);
+      setComplaintsList(prev => prev.filter(item => item.id !== id));
+      toast.success('Réclamation supprimée avec succès');
+    } catch (err: any) {
+      toast.error('Erreur lors de la suppression');
+    }
+  };
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'inProgress' | 'resolved'>('all');
   const [sortConfig, setSortConfig] = useState<{ key: keyof Complaint; direction: 'ascending' | 'descending' }>(
     { key: 'date_submitted', direction: 'descending' }
@@ -73,7 +88,7 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ initialComplaints }) =>
 
 
 
-  const filteredComplaints = (complaints || []).filter(item => {
+  const filteredComplaints = (complaintsList || []).filter(item => {
     const matchesSearch = (
       item.sujet.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -133,7 +148,7 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ initialComplaints }) =>
               <tr key={item.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap overflow-hidden text-clip text-sm text-yellow-600 font-medium">
                   {item.numero_suivi}
-                  </td>
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">{item.email}</div>
                 </td>
@@ -165,11 +180,21 @@ const ComplaintTable: React.FC<ComplaintTableProps> = ({ initialComplaints }) =>
                         Résolu
                       </Button>
                     )}
+                    {isSuperUser && (
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleDelete(item.id)}
+                        icon={<Trash className="h-4 w-4" />}
+                      >
+                        Supprimer
+                      </Button>
+                    )}
                   </div>
                 </td>
               </tr>
             ))}
-            {sortedComplaints.length === 0 && (
+            {Array.isArray(sortedComplaints) && sortedComplaints.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
                   Aucune réclamation trouvée

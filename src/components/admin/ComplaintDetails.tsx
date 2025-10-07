@@ -56,10 +56,6 @@ const ComplaintDetails: React.FC<ComplaintDetailsProps> = ({
       setIsSubmitting(false);
       toast.success(`Statut mis à jour: ${newStatus}`);
       
-      // In a real app, you would send an email notification here
-      if (newStatus === 'resolved') {
-        console.log('Sending email notification to:', complaint.email);
-      }
     }, 500);
   };
 

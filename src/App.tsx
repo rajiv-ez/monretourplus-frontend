@@ -36,11 +36,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 // Vérifie si l'utilisateur est admin
-const ProtectedAdminRoute = ({ children }: { children: JSX.Element }) => {
-  const isAdmin = localStorage.getItem('is_admin') === 'true';
-  return isAdmin ? children : <Navigate to="/login" replace />;
+const ProtectedStaffRoute = ({ children }: { children: JSX.Element }) => {
+  const isStaff = localStorage.getItem('is_staff') === 'true';
+  return isStaff ? children : <Navigate to="/login" replace />;
 };
-
 
 const AppRoutes = () => (
   <Routes>
@@ -73,11 +72,11 @@ const AppRoutes = () => (
     <Route
       path="/admin"
       element={
-        <ProtectedAdminRoute>
+        <ProtectedStaffRoute>
           <Layout>
             <AdminPage />
           </Layout>
-        </ProtectedAdminRoute>
+        </ProtectedStaffRoute>
       }
     />
 

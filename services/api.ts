@@ -14,7 +14,7 @@ api.interceptors.response.use(
   async err => {
     const originalRequest = err.config;
 
-    if (err.response?.status === 401 && !originalRequest._retry && localStorage.getItem('is_admin') === 'true') {
+    if (err.response?.status === 401 && !originalRequest._retry && localStorage.getItem('is_staff') === 'true') {
       originalRequest._retry = true;
 
       try {

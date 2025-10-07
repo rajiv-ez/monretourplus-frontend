@@ -24,11 +24,12 @@ export function usePaginatedApi<T = any>(initialEndpoint: string): UsePaginatedA
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('access_token');
-      const headers = { Authorization: `Bearer ${token}` };
-      // Si pageUrl est absolue, on l'utilise telle quelle, sinon on la concatène au baseUrl
-      const url = pageUrl.startsWith('http') ? pageUrl : baseUrl + pageUrl;
-      const res = await api.get(url, { headers });
+    //   const token = localStorage.getItem('access_token');
+    //   const headers = { Authorization: `Bearer ${token}` };
+    //   // Si pageUrl est absolue, on l'utilise telle quelle, sinon on la concatène au baseUrl
+    //   const url = pageUrl.startsWith('http') ? pageUrl : baseUrl + pageUrl;
+    //   const res = await api.get(url, { headers });
+      const res = await api.get(pageUrl);
       setData(res.data.results);
       setNext(res.data.next);
       setPrevious(res.data.previous);

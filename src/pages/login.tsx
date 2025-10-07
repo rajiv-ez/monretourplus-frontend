@@ -32,8 +32,7 @@ const Login: React.FC = () => {
       const token = res.data.access;
 
       const payload = JSON.parse(atob(token.split('.')[1]));
-      console.log("is_admin", payload.is_admin)
-      if (!payload.is_admin) {
+      if (!payload.is_staff) {
         navigate('/login');
         return;
       }
@@ -42,14 +41,14 @@ const Login: React.FC = () => {
       localStorage.setItem('refresh_token', res.data.refresh);
       
       localStorage.setItem('username', payload.username);
-      localStorage.setItem('is_admin', payload.is_admin ? 'true' : 'false');
+      localStorage.setItem('is_superuser', payload.is_superuser ? 'true' : 'false');
+      localStorage.setItem('is_staff', payload.is_staff ? 'true' : 'false');
 
       navigate('/admin');
 
     } catch (err: unknown) {
       const error = err as AxiosError;
       console.error("Erreur login:", error);
-      //console.log("Détail:", error.response?.data);
     } finally {
       setIsLoading(false);
     }

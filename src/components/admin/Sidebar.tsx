@@ -30,6 +30,8 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => {
+  const isSuperUser = localStorage.getItem('is_superuser') === 'true';
+
   const menuItems = [
     { id: 'overview', label: 'Vue d\'ensemble', icon: <LayoutDashboard className="h-5 w-5" /> },
     { id: 'feedback', label: 'Avis clients', icon: <MessageSquare className="h-5 w-5" /> },
@@ -46,6 +48,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => 
         <h2 className="text-xl font-bold text-gray-800 mb-6">Administration</h2>
         <nav className="space-y-2">
           {menuItems.map((item) => (
+            (item.id !== 'users' || isSuperUser) &&
+
             <SidebarItem
               key={item.id}
               icon={item.icon}

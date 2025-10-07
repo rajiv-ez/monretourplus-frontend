@@ -40,7 +40,7 @@ export const calculateComplaintStats = (complaints: Complaint[]): ComplaintStats
 export const calculateFeedbackStats = (feedback: Feedback[]): FeedbackStats => {
   const totalPositive = feedback.filter(f => f.note >= 4).length;
   const totalNegative = feedback.filter(f => f.note <= 2).length;
-  const totalNeutral = feedback.filter(f => f.note === 3).length;
+  const totalNeutral = feedback.filter(f => f.note >= 3).length;
 
   const averageRating = feedback.length
     ? feedback.reduce((acc, f) => acc + f.note, 0) / feedback.length

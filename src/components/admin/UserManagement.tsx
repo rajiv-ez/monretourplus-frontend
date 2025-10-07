@@ -10,7 +10,7 @@ interface AdminUser {
   id: number;
   username: string;
   email: string;
-  is_admin: boolean;
+  is_superuser: boolean;
 }
 
 const UserManagement: React.FC = () => {
@@ -20,7 +20,7 @@ const UserManagement: React.FC = () => {
     username: '',
     email: '',
     password: '',
-    is_admin: false
+    is_superuser: false
   });
   const [showForm, setShowForm] = useState(false);
   const [changingPassword, setChangingPassword] = useState<{ userId: number; password: string } | null>(null);
@@ -47,7 +47,7 @@ const UserManagement: React.FC = () => {
     try {
       await api.post('/accounts/api/register/', newUser);
       toast.success("Utilisateur créé");
-      setNewUser({ username: '', email: '', password: '', is_admin: false });
+      setNewUser({ username: '', email: '', password: '', is_superuser: false });
       setShowForm(false);
       fetchUsers();
     } catch (err) {
@@ -59,7 +59,7 @@ const UserManagement: React.FC = () => {
     if (!confirm("Confirmer la suppression ?")) return;
     try {
       const token = localStorage.getItem('access_token');
-      await api.delete(`/accounts/api/users/${id}/`, {
+      await api.delete(`/accounts/api/users/${id}/delete/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Utilisateur supprimé");
@@ -129,12 +129,12 @@ const UserManagement: React.FC = () => {
             />
             <div className="flex items-center space-x-2">
               <input
-                id="is_admin"
+                id="is_superuser"
                 type="checkbox"
-                checked={newUser.is_admin}
-                onChange={(e) => setNewUser({ ...newUser, is_admin: e.target.checked })}
+                checked={newUser.is_superuser}
+                onChange={(e) => setNewUser({ ...newUser, is_superuser: e.target.checked })}
               />
-              <label htmlFor="is_admin" className="text-sm text-gray-700">Admin ?</label>
+              <label htmlFor="is_superuser" className="text-sm text-gray-700">Admin ?</label>
             </div>
           </div>
           <div className="mt-4 flex justify-end space-x-2">
@@ -160,8 +160,8 @@ const UserManagement: React.FC = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.username}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <span className={`px-2 inline-flex text-xs font-semibold rounded-full ${user.is_admin ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}`}>
-                    {user.is_admin ? 'Admin' : 'Utilisateur'}
+                  <span className={`px-2 inline-flex text-xs font-semibold rounded-full ${user.is_superuser ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}`}>
+                    {user.is_superuser ? 'Admin' : 'Utilisateur'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
@@ -189,7 +189,7 @@ const UserManagement: React.FC = () => {
       </div>
 
       {changingPassword && (
-        <Card>
+        <Card className='bg-gray-100/20'>
           <h3 className="text-lg font-medium mb-2">Changer mot de passe</h3>
           <Input
             id="new-password"

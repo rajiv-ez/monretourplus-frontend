@@ -16,7 +16,6 @@ export const getFullClientProfile = async () => {
                 Authorization: `Bearer ${token}`,
             },
         });
-        console.log("getFullClientProfile", response.data);
         return response.data;
 
     } catch (error) {
